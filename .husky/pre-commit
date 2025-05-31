@@ -1,0 +1,4 @@
+echo  "[Husky] Running pre-commit Hook"
+echo  "[Husky] Running eslint Verifier"
+
+npm run precommit
