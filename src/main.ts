@@ -1,24 +1,24 @@
-import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
-import { ConfigService } from '@nestjs/config';
+import { NestFactory } from "@nestjs/core";
+import { AppModule } from "./app.module";
+import { ConfigService } from "@nestjs/config";
 import { Logger } from "@nestjs/common";
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
-  
-  // Config service
-  const configService: ConfigService = app.get(ConfigService);
+    const app = await NestFactory.create(AppModule);
 
-  // Enable CORS
-  app.enableCors();
+    // Config service
+    const configService: ConfigService = app.get(ConfigService);
 
-  // Set global prefix
-  app.setGlobalPrefix('api/v1');
+    // Enable CORS
+    app.enableCors();
 
-  // Start the application
-  const { port } = configService.get("server");
-  await app.listen(port, () => {
-    Logger.log(`Server is running on port ${port}`);
-  });
+    // Set global prefix
+    app.setGlobalPrefix("api/v1");
+
+    // Start the application
+    const { port } = configService.get("server");
+    await app.listen(port, () => {
+        Logger.log(`Server is running on port ${port}`);
+    });
 }
 bootstrap();

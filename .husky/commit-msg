@@ -1,0 +1,4 @@
+echo  "[Husky] Running commit-msg Hook"
+echo  "[Husky] Running commitlint"
+
+npx --no -- commitlint --edit "$1"
