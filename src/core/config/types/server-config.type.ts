@@ -1,4 +1,4 @@
 export type ServerConfigType = {
-  environment: string;
-  port: number;
+    environment: string;
+    port: number;
 };
