@@ -3,7 +3,7 @@ import { Entity, Column, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity()
 export class User {
-    @PrimaryGeneratedColumn("uuid")
+    @PrimaryGeneratedColumn("increment")
     id: string;
 
     @Column({ unique: true })
@@ -13,9 +13,9 @@ export class User {
     password: string;
 
     @Column({
-        type: "enum",
-        enum: UserRole,
+        type: "varchar",
+        length: 50,
         default: UserRole.REGULAR_USER,
     })
-    role: UserRole;
+    role: string;
 }

@@ -21,7 +21,10 @@
     "lint:check": "eslint \"{src,apps,libs,test}/**/*.ts\"",
     "prettier:check": "prettier --check --debug-check \"src/**/*.ts\" \"test/**/*.ts\"",
     "prepare": "husky && echo \"[Husky] Installed Husky\"",
-    "precommit": "npm run prettier:check && npm run lint:check"
+    "precommit": "npm run prettier:check && npm run lint:check",
+    "migration:generate": "ts-node ./node_modules/typeorm/cli.js migration:generate src/database/migrations/$npm_config_name --dataSource ./typeorm.config.ts",
+    "migration:run": "ts-node ./node_modules/typeorm/cli.js migration:run --dataSource ./typeorm.config.ts",
+    "migration:revert": "ts-node ./node_modules/typeorm/cli.js migration:revert --dataSource ./typeorm.config.ts"
   },
   "dependencies": {
     "@nestjs/common": "^10.0.0",
