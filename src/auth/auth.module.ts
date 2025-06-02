@@ -7,11 +7,13 @@ import { AuthController } from "./auth.controller";
 import { JwtModule } from "@nestjs/jwt";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import { JwtConfigType } from "src/core/config/types/jwt-config.type";
+import { PassportModule } from "@nestjs/passport";
 
 @Module({
     imports: [
         TypeOrmModule.forFeature([User]),
         UsersModule,
+        PassportModule.register({ defaultStrategy: "jwt" }),
         JwtModule.registerAsync({
             imports: [ConfigModule],
             inject: [ConfigService],
