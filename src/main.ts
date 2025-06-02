@@ -1,7 +1,7 @@
 import { NestFactory } from "@nestjs/core";
 import { AppModule } from "./app.module";
 import { ConfigService } from "@nestjs/config";
-import { Logger, RequestMethod } from "@nestjs/common";
+import { Logger, RequestMethod, ValidationPipe } from "@nestjs/common";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 
 async function bootstrap() {
@@ -12,6 +12,9 @@ async function bootstrap() {
 
     // Enable CORS
     app.enableCors();
+
+    // Global validation pipe
+    app.useGlobalPipes(new ValidationPipe());
 
     // Set global prefix
     app.setGlobalPrefix("api/v1", {
