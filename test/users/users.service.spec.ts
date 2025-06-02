@@ -93,4 +93,34 @@ describe("UsersService", () => {
             expect(result).not.toHaveProperty("password");
         });
     });
+
+    describe("findByEmail", () => {
+        const email = "findme@example.com";
+
+        it("should return the user if found", async () => {
+            const user = {
+                id: 2,
+                email,
+                password: "hashedpassword",
+                role: UserRole.REGULAR_USER,
+                createdAt: new Date("2023-02-01"),
+                updatedAt: new Date("2023-02-01"),
+            };
+            jest.spyOn(userRepository, "findOne").mockResolvedValue(user);
+
+            const result = await usersService.findByEmail(email);
+
+            expect(userRepository.findOne).toHaveBeenCalledWith({ where: { email } });
+            expect(result).toEqual(user);
+        });
+
+        it("should return null if user is not found", async () => {
+            jest.spyOn(userRepository, "findOne").mockResolvedValue(null);
+
+            const result = await usersService.findByEmail(email);
+
+            expect(userRepository.findOne).toHaveBeenCalledWith({ where: { email } });
+            expect(result).toBeNull();
+        });
+    });
 });

@@ -8,15 +8,18 @@ describe("AuthController", () => {
     let authController: AuthController;
     let authService: AuthService;
 
+    const mockService = {
+        register: jest.fn(),
+        login: jest.fn(),
+    };
+
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
             controllers: [AuthController],
             providers: [
                 {
                     provide: AuthService,
-                    useValue: {
-                        register: jest.fn(),
-                    },
+                    useValue: mockService,
                 },
             ],
         }).compile();
@@ -33,18 +36,49 @@ describe("AuthController", () => {
         expect(authController).toBeDefined();
     });
 
-    it("should call AuthService.register when register is called", async () => {
+    describe("register", () => {
         const createUserDto: CreateUserDto = { email: "test@test.com", password: "testpass", role: UserRole.REGULAR_USER };
-        const date = new Date();
-        jest.spyOn(authService, "register").mockResolvedValue({
-            id: 1,
-            email: createUserDto.email,
-            role: createUserDto.role,
-            createdAt: date,
-            updatedAt: date,
+        it("should call AuthService.register", async () => {
+            const date = new Date();
+            jest.spyOn(authService, "register").mockResolvedValue({
+                id: 1,
+                email: createUserDto.email,
+                role: createUserDto.role,
+                createdAt: date,
+                updatedAt: date,
+            });
+            const result = await authController.register(createUserDto);
+            expect(result).toEqual({ id: 1, email: createUserDto.email, role: createUserDto.role, createdAt: date, updatedAt: date });
+            expect(authService.register).toHaveBeenCalledWith(createUserDto);
         });
-        const result = await authController.register(createUserDto);
-        expect(result).toEqual({ id: 1, email: createUserDto.email, role: createUserDto.role, createdAt: date, updatedAt: date });
-        expect(authService.register).toHaveBeenCalledWith(createUserDto);
+
+        it("should throw if AuthService.register throws", async () => {
+            jest.spyOn(authService, "register").mockRejectedValue(new Error("Email is already registered"));
+
+            await expect(authController.register(createUserDto)).rejects.toThrow("Email is already registered");
+            expect(authService.register).toHaveBeenCalledWith(createUserDto);
+        });
+    });
+
+    describe("login", () => {
+        it("should call AuthService.login when login is called", async () => {
+            const loginDto = { email: "test@test.com", password: "testpass" };
+            const accessToken = "asdedef12dedesd";
+            jest.spyOn(authService, "login").mockResolvedValue({ accessToken });
+
+            const result = await authController.login(loginDto as any);
+
+            expect(result).toEqual({ accessToken });
+            expect(authService.login).toHaveBeenCalledWith(loginDto);
+        });
+
+        it("should throw error if AuthService.login throws", async () => {
+            const loginDto = { email: "test@test.com", password: "wrongpassword" };
+            const error = new Error("Invalid credentials");
+            jest.spyOn(authService, "login").mockRejectedValue(error);
+
+            await expect(authController.login(loginDto as any)).rejects.toThrow("Invalid credentials");
+            expect(authService.login).toHaveBeenCalledWith(loginDto);
+        });
     });
 });

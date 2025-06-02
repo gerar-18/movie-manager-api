@@ -13,4 +13,8 @@ export const configLoader = (): ConfigLoaderType => ({
         database: process.env.DB_NAME,
         synchronize: process.env.DB_SYNCHRONIZE === "true",
     },
+    jwt: {
+        secret: process.env.JWT_SECRET,
+        expiresIn: process.env.JWT_EXPIRES_IN,
+    },
 });

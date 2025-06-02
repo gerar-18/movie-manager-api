@@ -39,4 +39,8 @@ export class UsersService {
         };
         return userWithoutPassword;
     }
+
+    async findByEmail(email: string): Promise<User | null> {
+        return this.userRepository.findOne({ where: { email } });
+    }
 }
