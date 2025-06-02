@@ -21,7 +21,7 @@ export class Movie {
     producer?: string;
 
     @Column({ nullable: true })
-    releaseDate?: string;
+    releaseDate?: number;
 
     @Column({ default: false })
     isFromSwapi: boolean;

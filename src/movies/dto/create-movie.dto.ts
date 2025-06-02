@@ -24,9 +24,4 @@ export class CreateMovieDto {
     @IsString()
     @MaxLength(255)
     producer?: string;
-
-    @ApiProperty({ example: "It is a period of civil war", required: false })
-    @IsOptional()
-    @IsString()
-    openingCrawl?: string;
 }
