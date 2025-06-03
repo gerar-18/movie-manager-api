@@ -17,4 +17,7 @@ export const configLoader = (): ConfigLoaderType => ({
         secret: process.env.JWT_SECRET,
         expiresIn: process.env.JWT_EXPIRES_IN,
     },
+    swapi: {
+        url: process.env.SWAPI_URL,
+    },
 });

@@ -11,4 +11,5 @@ export const configSchema = Joi.object({
     DB_SYNCHRONIZE: Joi.boolean().default(false),
     JWT_SECRET: Joi.string().required(),
     JWT_EXPIRES_IN: Joi.string().required(),
+    SWAPI_URL: Joi.string().uri().required(),
 });

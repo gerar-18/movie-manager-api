@@ -7,8 +7,8 @@ export class MovieResponseDto {
     @ApiProperty({ description: "Title of the movie", example: "A New Hope" })
     title: string;
 
-    @ApiProperty({ description: "Release date of the movie", example: 1977 })
-    releaseDate?: number;
+    @ApiProperty({ description: "Release date of the movie", example: "1977-05-25" })
+    releaseDate?: string;
 
     @ApiProperty({ description: "Director of the movie", example: "George Lucas", required: false })
     director?: string;

@@ -11,6 +11,7 @@ import { Roles } from "../auth/decorators/roles.decorator";
 import { UserRole } from "../common/enums/user.enums";
 import { RolesGuard } from "../auth/guards/roles.guard";
 import { Movie } from "./entities/movie.entity";
+import { SyncResponseDto } from "./dto/sync-response.dto";
 
 @ApiTags("Movies")
 @ApiBearerAuth()
@@ -86,5 +87,19 @@ export class MoviesController {
     })
     async deleteMovie(@Query("id") id: number): Promise<void> {
         await this.moviesService.deleteById(id);
+    }
+
+    @Post("sync-swapi")
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(UserRole.ADMIN)
+    @ApiOkResponse({
+        description: "SWAPI sync completed successfully",
+        type: SyncResponseDto,
+    })
+    @ApiBadRequestResponse({
+        description: "Error during SWAPI sync",
+    })
+    async syncSwapi(): Promise<SyncResponseDto> {
+        return this.moviesService.syncWithSwapi();
     }
 }

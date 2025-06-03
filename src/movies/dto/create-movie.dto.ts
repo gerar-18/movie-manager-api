@@ -1,5 +1,6 @@
-import { IsString, IsInt, IsOptional, IsPositive, MaxLength } from "class-validator";
+import { IsString, IsOptional, MaxLength } from "class-validator";
 import { ApiProperty } from "@nestjs/swagger";
+import { IsDateFormat } from "../../common/validators/is-date-format.validator";
 
 export class CreateMovieDto {
     @ApiProperty({ example: "A New Hope" })
@@ -7,11 +8,10 @@ export class CreateMovieDto {
     @MaxLength(255)
     title: string;
 
-    @ApiProperty({ example: 1977 })
+    @ApiProperty({ example: "1997-02-02" })
     @IsOptional()
-    @IsInt()
-    @IsPositive()
-    releaseDate?: number;
+    @IsDateFormat({ message: "Release date must be in the format YYYY-MM-DD and be a valid date" })
+    releaseDate?: string;
 
     @ApiProperty({ example: "George Lucas", required: false })
     @IsOptional()

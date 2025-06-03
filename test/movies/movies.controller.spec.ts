@@ -2,6 +2,7 @@ import { Test, TestingModule } from "@nestjs/testing";
 import { MoviesController } from "../../src/movies/movies.controller";
 import { MoviesService } from "../../src/movies/movies.service";
 import { NotFoundException } from "@nestjs/common";
+import { SyncResponseDto } from "../../src/movies/dto/sync-response.dto";
 
 describe("MoviesController", () => {
     let controller: MoviesController;
@@ -13,6 +14,7 @@ describe("MoviesController", () => {
         findById: jest.fn(),
         updateById: jest.fn(),
         deleteById: jest.fn(),
+        syncWithSwapi: jest.fn(),
     };
 
     beforeEach(async () => {
@@ -44,7 +46,7 @@ describe("MoviesController", () => {
                 title: "ATest",
                 director: "George",
                 producer: "Jhon",
-                releaseDate: 1977,
+                releaseDate: "1977-05-25",
             };
             const mockMovie = {
                 id: 1,
@@ -110,7 +112,7 @@ describe("MoviesController", () => {
                 title: "Updated Title",
                 director: "Updated Director",
                 producer: "Updated Producer",
-                releaseDate: 1980,
+                releaseDate: "1980-01-01",
             };
             const mockMovie: any = {
                 id,
@@ -154,6 +156,30 @@ describe("MoviesController", () => {
 
             await expect(controller.deleteMovie(id)).rejects.toThrow(NotFoundException);
             expect(moviesService.deleteById).toHaveBeenCalledWith(id);
+        });
+    });
+
+    describe("syncSwapi", () => {
+        it("should sync movies with SWAPI and return a success message", async () => {
+            const mockSyncResponse: SyncResponseDto = {
+                message: "Synchronization completed successfully",
+                newMovies: 1,
+                existingMovies: 0,
+                addedTitles: ["Spiderman"],
+                timestamp: new Date("2023-08-15T14:30:00.000Z"),
+            };
+            jest.spyOn(moviesService, "syncWithSwapi").mockResolvedValue(mockSyncResponse);
+
+            const result = await controller.syncSwapi();
+            expect(moviesService.syncWithSwapi).toHaveBeenCalled();
+            expect(result).toEqual(mockSyncResponse);
+        });
+
+        it("should throw an error if SWAPI sync fails", async () => {
+            jest.spyOn(moviesService, "syncWithSwapi").mockRejectedValue(new Error("Sync failed"));
+
+            await expect(controller.syncSwapi()).rejects.toThrow("Sync failed");
+            expect(moviesService.syncWithSwapi).toHaveBeenCalled();
         });
     });
 });
