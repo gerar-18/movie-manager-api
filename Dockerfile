@@ -28,4 +28,5 @@ COPY --from=builder /app/typeorm.config.ts ./
 
 EXPOSE 8080
 
-CMD ["sh", "-c", "npm run migration:run && node dist/main.js"]
+# CMD ["sh", "-c", "npm run migration:run && node dist/main.js"]
+CMD ["node", "dist/main.js"]
