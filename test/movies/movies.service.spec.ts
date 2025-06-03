@@ -4,10 +4,14 @@ import { ILike } from "typeorm";
 import { Movie } from "../../src/movies/entities/movie.entity";
 import { MoviesService } from "../../src/movies/movies.service";
 import { NotFoundException } from "@nestjs/common";
+import { HttpService } from "@nestjs/axios";
+import { of, throwError } from "rxjs";
+import { ConfigService } from "@nestjs/config";
 
 describe("MoviesService", () => {
     let service: MoviesService;
     let movieRepository: any;
+    let configService: ConfigService;
 
     const mockRepository = {
         findAndCount: jest.fn(),
@@ -15,6 +19,15 @@ describe("MoviesService", () => {
         create: jest.fn(),
         save: jest.fn(),
         delete: jest.fn(),
+        findOneBy: jest.fn(),
+    };
+
+    const mockHttpService = {
+        get: jest.fn(),
+    };
+
+    const mockConfigService = {
+        get: jest.fn(),
     };
 
     beforeEach(async () => {
@@ -25,11 +38,21 @@ describe("MoviesService", () => {
                     provide: getRepositoryToken(Movie),
                     useValue: mockRepository,
                 },
+                {
+                    provide: HttpService,
+                    useValue: mockHttpService,
+                },
+                {
+                    provide: ConfigService,
+                    useValue: mockConfigService,
+                },
             ],
         }).compile();
 
         service = module.get<MoviesService>(MoviesService);
         movieRepository = module.get("MovieRepository");
+        configService = module.get<ConfigService>(ConfigService);
+        jest.spyOn(service["logger"], "error").mockImplementation(() => {});
     });
 
     afterEach(() => {
@@ -46,7 +69,7 @@ describe("MoviesService", () => {
                 title: "ATest",
                 director: "George",
                 producer: "Jhon",
-                releaseDate: 1977,
+                releaseDate: "1977-05-25",
             };
             const mockMovie = {
                 id: 1,
@@ -164,7 +187,7 @@ describe("MoviesService", () => {
                 title: "Updated Title",
                 director: "Updated Director",
                 producer: "Updated Producer",
-                releaseDate: 1980,
+                releaseDate: "1980-01-01",
             };
             const mockMovie: any = {
                 id: 1,
@@ -209,6 +232,129 @@ describe("MoviesService", () => {
             jest.spyOn(movieRepository, "delete").mockResolvedValue({ affected: 0 });
 
             await expect(service.deleteById(1)).rejects.toThrow(NotFoundException);
+        });
+    });
+
+    describe("fetchSwapiFilms", () => {
+        it("should fetch films from SWAPI and return the response", async () => {
+            const mockResponse = {
+                data: {
+                    result: [{ uid: "1", properties: { title: "Test title", episode_id: 4 } }],
+                },
+            };
+
+            jest.spyOn(mockConfigService, "get").mockReturnValue("https://www.swapi.tech/api");
+            jest.spyOn(mockHttpService, "get").mockReturnValueOnce(of(mockResponse));
+
+            const result = await service.fetchSwapiFilms();
+
+            expect(configService.get).toHaveBeenCalledWith("swapi.url");
+            expect(mockHttpService.get).toHaveBeenCalledWith("https://www.swapi.tech/api/films");
+            expect(result).toEqual({
+                result: [{ uid: "1", properties: { title: "Test title", episode_id: 4 } }],
+            });
+        });
+
+        it("should throw an error if SWAPI service is unavailable", async () => {
+            jest.spyOn(mockHttpService, "get").mockReturnValueOnce(throwError(() => new Error("Network Error")));
+
+            await expect(service.fetchSwapiFilms()).rejects.toThrow("SWAPI service unavailable");
+        });
+    });
+
+    describe("syncWithSwapi", () => {
+        const swapiResponse = {
+            result: [
+                {
+                    uid: "1",
+                    properties: {
+                        title: "test title",
+                        episode_id: 4,
+                        opening_crawl: "test opening crawl",
+                        director: "Jhon Doe",
+                        producer: "Jane Doe",
+                        release_date: "1977-05-25",
+                    },
+                },
+                {
+                    uid: "2",
+                    properties: {
+                        title: "Test Title 2",
+                        episode_id: 5,
+                        opening_crawl: "Another test opening crawl",
+                        director: "George Lucas",
+                        producer: "Gerard Lucas",
+                        release_date: "1980-05-17",
+                    },
+                },
+            ],
+        };
+
+        beforeEach(() => {
+            jest.spyOn(service, "fetchSwapiFilms").mockResolvedValue(swapiResponse as any);
+        });
+
+        it("should add new movies from SWAPI and return correct sync response", async () => {
+            jest.spyOn(movieRepository, "findOneBy").mockResolvedValueOnce(null).mockResolvedValueOnce(null);
+            jest.spyOn(movieRepository, "create").mockReturnValueOnce({ title: "test title" }).mockReturnValueOnce({ title: "Test Title 2" });
+            jest.spyOn(movieRepository, "save").mockResolvedValue({});
+
+            const result = await service.syncWithSwapi();
+
+            expect(service.fetchSwapiFilms).toHaveBeenCalled();
+            expect(movieRepository.findOneBy).toHaveBeenCalledTimes(2);
+            expect(movieRepository.create).toHaveBeenCalledTimes(2);
+            expect(movieRepository.save).toHaveBeenCalledTimes(2);
+            expect(result).toMatchObject({
+                message: "Synchronization completed successfully",
+                newMovies: 2,
+                existingMovies: 0,
+                addedTitles: ["test title", "Test Title 2"],
+            });
+            expect(result.timestamp).toBeInstanceOf(Date);
+        });
+
+        it("should skip existing movies and count them correctly", async () => {
+            // First movie exists, second does not
+            jest.spyOn(movieRepository, "findOneBy").mockResolvedValueOnce({ id: 1 }).mockResolvedValueOnce(null);
+            jest.spyOn(movieRepository, "create").mockReturnValueOnce({ title: "Test Title 2" });
+            jest.spyOn(movieRepository, "save").mockResolvedValue({});
+
+            const result = await service.syncWithSwapi();
+
+            expect(movieRepository.findOneBy).toHaveBeenCalledTimes(2);
+            expect(movieRepository.create).toHaveBeenCalledTimes(1);
+            expect(movieRepository.save).toHaveBeenCalledTimes(1);
+            expect(result).toMatchObject({
+                message: "Synchronization completed successfully",
+                newMovies: 1,
+                existingMovies: 1,
+                addedTitles: ["Test Title 2"],
+            });
+        });
+
+        it("should handle all movies already existing", async () => {
+            jest.spyOn(movieRepository, "findOneBy").mockResolvedValueOnce({ id: 1 }).mockResolvedValueOnce({ id: 2 }); // second movie exists
+            jest.spyOn(movieRepository, "create").mockReturnValueOnce({});
+            jest.spyOn(movieRepository, "save").mockResolvedValue({});
+
+            const result = await service.syncWithSwapi();
+
+            expect(movieRepository.findOneBy).toHaveBeenCalledTimes(2);
+            expect(movieRepository.create).not.toHaveBeenCalled();
+            expect(movieRepository.save).not.toHaveBeenCalled();
+            expect(result).toMatchObject({
+                message: "Synchronization completed successfully",
+                newMovies: 0,
+                existingMovies: 2,
+                addedTitles: [],
+            });
+        });
+
+        it("should throw error if fetchSwapiFilms fails", async () => {
+            jest.spyOn(service, "fetchSwapiFilms").mockRejectedValue(new Error("SWAPI service unavailable"));
+
+            await expect(service.syncWithSwapi()).rejects.toThrow("Failed to sync with SWAPI");
         });
     });
 });
