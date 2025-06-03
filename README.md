@@ -72,3 +72,19 @@ To run all tests, use the following command:
 ```bash
 npm run test
 ```
+
+## **Movie Synchronization**
+
+The application includes a synchronization system to keep movie data up to date using the SWAPI (Star Wars API):
+
+•	🕒 Scheduled Sync (Cron Job):
+
+A cron job runs periodically in the background to fetch and store the latest films from SWAPI.
+
+•	🌐 Manual Sync Endpoint:
+
+You can also trigger the synchronization manually by calling the following endpoint:
+
+```
+POST /api/v1/movies/sync-swapi
+```
