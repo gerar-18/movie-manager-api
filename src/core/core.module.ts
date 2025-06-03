@@ -12,6 +12,17 @@ import { DatabaseConfigType } from "./config/types/database-config.type";
             imports: [ConfigModule],
             useFactory: (configService: ConfigService) => {
                 const databaseConfig = configService.get<DatabaseConfigType>("database");
+                // This feature is for Railway deployment compatibility.
+                if (databaseConfig.url) {
+                    return {
+                        type: "postgres",
+                        url: databaseConfig.url,
+                        synchronize: false,
+                        autoLoadEntities: true,
+                        migrations: ["dist/migrations/*.js"],
+                        migrationsRun: true,
+                    };
+                }
                 return {
                     type: "postgres",
                     host: databaseConfig.host,
