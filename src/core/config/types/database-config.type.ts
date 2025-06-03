@@ -5,4 +5,5 @@ export type DatabaseConfigType = {
     password: string;
     database: string;
     synchronize: boolean;
+    url?: string;
 };

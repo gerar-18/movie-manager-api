@@ -12,6 +12,7 @@ export const configLoader = (): ConfigLoaderType => ({
         password: process.env.DB_PASSWORD,
         database: process.env.DB_NAME,
         synchronize: process.env.DB_SYNCHRONIZE === "true",
+        url: process.env.DATABASE_URL,
     },
     jwt: {
         secret: process.env.JWT_SECRET,
