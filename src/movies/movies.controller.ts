@@ -12,6 +12,7 @@ import { UserRole } from "../common/enums/user.enums";
 import { RolesGuard } from "../auth/guards/roles.guard";
 import { Movie } from "./entities/movie.entity";
 import { SyncResponseDto } from "./dto/sync-response.dto";
+import { UpdateMovieDto } from "./dto/update-movie.dto";
 
 @ApiTags("Movies")
 @ApiBearerAuth()
@@ -72,7 +73,7 @@ export class MoviesController {
     @ApiBadRequestResponse({
         description: "Invalid input data",
     })
-    async updateMovie(@Query("id") id: number, @Body() updateMovieDto: CreateMovieDto): Promise<MovieResponseDto> {
+    async updateMovie(@Query("id") id: number, @Body() updateMovieDto: UpdateMovieDto): Promise<MovieResponseDto> {
         return this.moviesService.updateById(id, updateMovieDto);
     }
 
