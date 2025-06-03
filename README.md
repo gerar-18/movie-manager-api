@@ -1,5 +1,9 @@
 # Movie Manager Api
 
+## Environment Variables
+
+A `.env.example` file is provided as a template for your environment variables. Copy this file to `.env` and set the necessary values.
+
 ## Running the Project Locally
 
 ### Using Docker
@@ -9,7 +13,13 @@ The project is dockerized and can be started using `docker-compose`, which will 
 To start the project with Docker, run:
 
 ```bash
-docker-compose up
+docker-compose up --build
+```
+
+Once the container is up and running, open a new terminal and run the migrations manually:
+
+ ```bash
+docker exec -it <container_name> npm run migration:run
 ```
 
 ### Without Docker
@@ -37,10 +47,6 @@ $ npm run start:dev
 # production mode
 $ npm run start:prod
 ```
-
-## Environment Variables
-
-A `.env.example` file is provided as a template for your environment variables. Copy this file to `.env` and set the necessary values.
 
 ## Authentication in app
 
