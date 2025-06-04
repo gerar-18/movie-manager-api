@@ -55,9 +55,33 @@ $ npm run start:dev
 $ npm run start:prod
 ```
 
-## 🔐 Authentication in app
+## 🔐 Authentication and Roles
 
 The project uses JWT-based authentication with role-based access control. Users must log in to receive a token, which must be included in subsequent requests to access protected routes. Guards and custom decorators are used to enforce authentication and role permissions (ADMIN, REGULAR_USER).
+
+### 🛡️ Roles and Permissions
+
+This API uses role-based access control. The available roles are defined as follows:
+
+```code
+export enum UserRole {
+    ADMIN = "admin",
+    REGULAR_USER = "regular_user",
+}
+```
+
+
+- **regular_user**:
+  - Can view movie data.
+  - Cannot create, update, or delete movies.
+  - Cannot trigger synchronization.
+
+- **admin**:
+  - Full access to movie management (create, update, delete).
+  - Can manually trigger synchronization with the Star Wars API.
+  - Can access protected admin routes.
+
+These roles are validated through route guards and custom decorators to ensure secure access.
 
 ## 💾 Production Environment
 

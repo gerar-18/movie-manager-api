@@ -23,6 +23,7 @@ export class CreateUserDto {
     @IsNotEmpty()
     @ApiProperty({
         example: UserRole.REGULAR_USER,
+        enum: UserRole,
     })
     role: UserRole;
 }
